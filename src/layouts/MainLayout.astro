@@ -1,0 +1,43 @@
+---
+import { ClientRouter } from "astro:transitions";
+import "../styles/global.css";
+import NavBar from "@components/shared/NavBar.astro";
+import {siteInfo} from "../consts/site-info";
+
+interface Props {
+    title: string;
+    image?: string;
+    description?: string;
+}
+
+
+const {title = siteInfo.title, description = siteInfo.description, image} = Astro.props;
+
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=Astro, initial-scale=1.0">
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- SEO -->
+	<meta name="description" content={description} />
+    <meta name="author" content="JaviLazaro" />
+
+    <!-- OG metatags -->
+     <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={image} />
+    <!-- Required -->
+    <title>{title}</title>
+    <ClientRouter />
+</head>
+<body class="bg-slate-800 text-slate-100 max-w-3xl mt-4 p-4">
+    <NavBar />
+    <main class="mt-10 m-auto max-w-3xl mx-4">
+    <slot />
+
+</body>
+</html>

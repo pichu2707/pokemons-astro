@@ -1,0 +1,134 @@
+---
+import "../../styles/global.css";
+
+import type { GetStaticPaths } from "astro";
+import type { PokemonListResponse } from "../../interfaces/pokemon-list.response";
+import {Icon} from 'astro-icon/components';
+
+import PokemonsCard from "../../components/pokemons/PokemonsCard.astro";
+import MainLayout from "../../layouts/MainLayout.astro"
+import Title from "@components/shared/Title.astro";
+
+export const getStaticPaths = (async () => {
+    const resp = await fetch("https://pokeapi.co/api/v2/pokemon?limit=151");
+    const { results } = await resp.json() as PokemonListResponse;
+    console.log(results);
+
+    return results.map(({name, url}) => ({
+        params: {
+            name: name
+        },
+        props: {
+            name:name,
+            url:url
+        },
+    }));
+}) satisfies GetStaticPaths;
+
+const {name} = Astro.params;
+const {url} = Astro.props;
+
+const id = url.split("/")[6];
+console.log("id", id);
+
+const audioSrc = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${id}.ogg`
+const imageScr = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`
+
+interface Props {
+    name: string;
+    url: string;
+}
+---
+
+
+<MainLayout 
+    title={`Pokemon - #${id} ${name}`}
+    description={`Información sobre el pokemon ${name}`}
+    image={imageScr}`>
+    <Title>{`Pokemon - #${id} ${name}`}</Title>
+
+    <section class="mt-10 mx-10 flex flex-col justify-center items-center capitalize">
+        <div class="flex flex-row">
+
+            <div>
+                <button 
+                class="btn text-blue-500" 
+                onclick="history.back()">
+                Volver</button>
+                <Title class="capitalizer">{name}</Title>
+            </div>
+            
+            <button id="btn-favorite" class="ml-4" data-name={name} data-id={id}>
+                <Icon data-outline name="heart-broker" size={50} />
+                <Icon data-full class="hidden" name="heart-full" size={50} />
+            </button>
+        </div>
+            <PokemonsCard 
+            name={name}
+            url={url}
+            isBig={true}
+            />
+        <audio controls class="mt-5">
+        <source src={audioSrc} type="audio/ogg" />
+        </audio>
+    </section>
+</MainLayout>
+
+<script>
+
+    interface favoritePokemons {
+        name: string;
+        id: number;        
+    }
+
+    const handlePageLoad = () => {
+        let favoritePokemons: favoritePokemons[] = JSON.parse(
+            localStorage.getItem('favorites') ?? '[]');
+            console.log('handlePageLoad', favoritePokemons);
+        const btnFavorite = document.getElementById("btn-favorite") as HTMLButtonElement;
+
+        if (!btnFavorite) return;
+
+        const name = btnFavorite.dataset.name ?? '';
+        const id = btnFavorite.dataset.id ?? '';
+
+        //Hacer una función para mostrar u ocultar el corazón lleno o vacío
+        const heartOutline= btnFavorite.querySelector('[data-outline]') as HTMLElement;
+        const heartFull= btnFavorite.querySelector('[data-full]') as HTMLElement;
+
+        
+        const toggleFavorite = () => {
+            const isFavorite = favoritePokemons.some((fav) => fav.name === name);
+
+            if ( isFavorite) {
+                //Remover
+                favoritePokemons = favoritePokemons.filter((fav) => fav.name !== name);
+            } else {
+                //Agregar
+                favoritePokemons.push({       
+                    id: +id,
+                    name: name,
+                });
+            }
+            localStorage.setItem('favorites', JSON.stringify(favoritePokemons));
+        }
+        
+        btnFavorite.addEventListener('click', () => {
+            heartOutline.classList.toggle('hidden');
+            heartFull.classList.toggle('hidden');
+            toggleFavorite();
+        });
+    };
+
+    document.addEventListener('astro:page-load', handlePageLoad);
+    
+</script>
+
+<style>
+    a {
+        hover:underline text-blue-500;
+    }
+    #btn-fav {
+        hover:animate-pulse;
+    }
+</style>
