@@ -34,9 +34,9 @@ const {title = siteInfo.title, description = siteInfo.description, image} = Astr
     <title>{title}</title>
     <ClientRouter />
 </head>
-<body class="bg-slate-800 text-slate-100 max-w-3xl mt-4 p-4">
+<body class="bg-slate-800 text-slate-100 flex flex-col max-w-3xl min-h-2 mt-4 p-4">
     <NavBar />
-    <main class="mt-10 m-auto max-w-3xl mx-4">
+    <main class="mt-10 m-auto flex-grow max-w-3xl mx-4">
     <slot />
 
 </body>
